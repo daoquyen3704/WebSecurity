@@ -17,7 +17,7 @@ router.get('/api/logout', authUser, asyncHandler(controllerUsers.logout));
 router.get('/api/refresh-token', asyncHandler(controllerUsers.refreshToken));
 
 router.get('/api/recharge-user', authUser, asyncHandler(controllerUsers.getRechargeUser));
-router.post('/api/update-user', authUser, asyncHandler(controllerUsers.updateUser));
+// router.post('/api/update-user', authUser, asyncHandler(controllerUsers.updateUser));
 
 // ÁP DỤNG BIỆN PHÁP PHÒNG TRÁNH: RBAC (Role-Based Access Control) Field
 // Chỉ admin mới được phép gửi lên 'isAdmin', 'balance', 'isActive'
@@ -29,11 +29,11 @@ router.post('/api/update-user', authUser, asyncHandler(controllerUsers.updateUse
 
 // ÁP DỤNG BIỆN PHÁP PHÒNG TRÁNH: Whitelist bằng Joi
 // Tự động lọc các field không có trong schema (như isAdmin)
-// router.post('/api/update-user',
-//     authUser,
-//     validate(userValidation.updateUser),
-//     asyncHandler(controllerUsers.updateUser)
-// );
+router.post('/api/update-user',
+    authUser,
+    validate(userValidation.updateUser),
+    asyncHandler(controllerUsers.updateUser)
+);
 router.post('/api/change-password', authUser, asyncHandler(controllerUsers.changePassword));
 
 router.post('/api/forgot-password', asyncHandler(controllerUsers.forgotPassword));

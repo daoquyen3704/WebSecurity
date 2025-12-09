@@ -225,41 +225,6 @@ class controllerUsers {
     }
 
     //Security
-    // async register(req, res) {
-    //     const { fullName, email, password, phone } = req.body;
-
-    //     // 1. Kiểm tra email đã tồn tại chưa
-    //     const checkUser = await modelUser.findOne({ email });
-    //     if (checkUser) throw new BadRequestError("Email đã tồn tại");
-
-    //     // 2. Mã hóa password
-    //     const hashedPassword = await bcrypt.hash(password, 10);
-
-    //     // 3. Tạo token xác minh tài khoản
-    //     const verifyToken = jwt.sign(
-    //         { email },
-    //         process.env.JWT_SECRET,
-    //         { expiresIn: "1d" }
-    //     );
-
-    //     // 4. Tạo user mới với WHITELIST FIELD (chỉ cho phép một số trường)
-    //     const newUser = await modelUser.create({
-    //         fullName,               // chỉ lấy từ destructuring
-    //         email,
-    //         password: hashedPassword,
-    //         phone,
-    //         isActive: false,        // luôn là false, không cho client set
-    //         isAdmin: false,         // nếu có field này thì phải set cố định, không lấy từ req.body
-    //         verifyToken: verifyToken,
-    //     });
-
-    //     return new OK({
-    //         message: "Đăng ký thành công!",
-    //         // metadata: newUser, // nếu cần trả thêm
-    //     }).send(res);
-    // }
-
-    // Mass assignment
     async register(req, res) {
         const { fullName, email, password, phone } = req.body;
 
@@ -277,18 +242,53 @@ class controllerUsers {
             { expiresIn: "1d" }
         );
 
-        //    Trải thẳng toàn bộ req.body vào create, cho phép hacker chèn thêm isAdmin, isActive, balance...
+        // 4. Tạo user mới với WHITELIST FIELD (chỉ cho phép một số trường)
         const newUser = await modelUser.create({
-            ...req.body,            // ⚠️ Gộp toàn bộ dữ liệu client gửi lên
-            password: hashedPassword,   // ghi đè password thành bản đã hash
-            verifyToken: verifyToken,   // vẫn tạo token bình thường
+            fullName,               // chỉ lấy từ destructuring
+            email,
+            password: hashedPassword,
+            phone,
+            isActive: false,        // luôn là false, không cho client set
+            isAdmin: false,         // nếu có field này thì phải set cố định, không lấy từ req.body
+            verifyToken: verifyToken,
         });
 
         return new OK({
-            message: "Đăng ký thành công (DEMO MASS ASSIGNMENT)!",
-            // metadata: newUser,
+            message: "Đăng ký thành công!",
+            // metadata: newUser, // nếu cần trả thêm
         }).send(res);
     }
+
+    // Mass assignment
+    // async register(req, res) {
+    //     const { fullName, email, password, phone } = req.body;
+
+    //     // 1. Kiểm tra email đã tồn tại chưa
+    //     const checkUser = await modelUser.findOne({ email });
+    //     if (checkUser) throw new BadRequestError("Email đã tồn tại");
+
+    //     // 2. Mã hóa password
+    //     const hashedPassword = await bcrypt.hash(password, 10);
+
+    //     // 3. Tạo token xác minh tài khoản
+    //     const verifyToken = jwt.sign(
+    //         { email },
+    //         process.env.JWT_SECRET,
+    //         { expiresIn: "1d" }
+    //     );
+
+    //     //    Trải thẳng toàn bộ req.body vào create, cho phép hacker chèn thêm isAdmin, isActive, balance...
+    //     const newUser = await modelUser.create({
+    //         ...req.body,            // ⚠️ Gộp toàn bộ dữ liệu client gửi lên
+    //         password: hashedPassword,   // ghi đè password thành bản đã hash
+    //         verifyToken: verifyToken,   // vẫn tạo token bình thường
+    //     });
+
+    //     return new OK({
+    //         message: "Đăng ký thành công (DEMO MASS ASSIGNMENT)!",
+    //         // metadata: newUser,
+    //     }).send(res);
+    // }
 
     async verifyEmail(req, res) {
         const { token } = req.query;
@@ -518,53 +518,53 @@ class controllerUsers {
         new OK({ message: 'Lấy thông tin nạp tiền thành công', metadata: rechargeUser }).send(res);
     }
 
-    // async updateUser(req, res) {
-    //     const { id } = req.user;
-
-    //     const { fullName, phone, address, avatar } = req.body;
-
-    //     const user = await modelUser.findByIdAndUpdate(
-    //         id,
-    //         { fullName, phone, address, avatar },
-    //         { new: true }
-    //     );
-
-    //     new OK({ message: 'Cập nhật thông tin thành công', metadata: user }).send(res);
-    // }
-
-
-    // Mass assignment
     async updateUser(req, res) {
         const { id } = req.user;
 
-        // CODE DỄ BỊ TẤN CÔNG:
-        // Gán thẳng toàn bộ req.body vào findByIdAndUpdate
-        // -> Hacker có thể gửi thêm isAdmin, balance, isActive...
+        const { fullName, phone, address, avatar } = req.body;
+
         const user = await modelUser.findByIdAndUpdate(
             id,
-            req.body,          // ⚠️ Mass Assignment
+            { fullName, phone, address, avatar },
             { new: true }
         );
 
-        return new OK({
-            message: 'Cập nhật thông tin thành công (DEMO MASS ASSIGNMENT)',
-            metadata: user,
-        }).send(res);
+        new OK({ message: 'Cập nhật thông tin thành công', metadata: user }).send(res);
     }
 
-    async getUsers(req, res) {
-        const dataUser = await modelUser.find();
-        const data = await Promise.all(
-            dataUser.map(async (user) => {
-                const post = await modelPost.find({ userId: user._id, status: 'active' });
-                const totalPost = post.length;
-                const totalSpent = post.reduce((sum, post) => sum + post.price, 0);
-                return { user, totalPost, totalSpent };
-            }),
-        );
 
-        new OK({ message: 'Lấy danh sách người dùng thành công', metadata: data }).send(res);
-    }
+    // Mass assignment
+    // async updateUser(req, res) {
+    //     const { id } = req.user;
+
+    //     // CODE DỄ BỊ TẤN CÔNG:
+    //     // Gán thẳng toàn bộ req.body vào findByIdAndUpdate
+    //     // -> Hacker có thể gửi thêm isAdmin, balance, isActive...
+    //     const user = await modelUser.findByIdAndUpdate(
+    //         id,
+    //         req.body,          // ⚠️ Mass Assignment
+    //         { new: true }
+    //     );
+
+    //     return new OK({
+    //         message: 'Cập nhật thông tin thành công (DEMO MASS ASSIGNMENT)',
+    //         metadata: user,
+    //     }).send(res);
+    // }
+
+    // async getUsers(req, res) {
+    //     const dataUser = await modelUser.find();
+    //     const data = await Promise.all(
+    //         dataUser.map(async (user) => {
+    //             const post = await modelPost.find({ userId: user._id, status: 'active' });
+    //             const totalPost = post.length;
+    //             const totalSpent = post.reduce((sum, post) => sum + post.price, 0);
+    //             return { user, totalPost, totalSpent };
+    //         }),
+    //     );
+
+    //     new OK({ message: 'Lấy danh sách người dùng thành công', metadata: data }).send(res);
+    // }
 
     async getRechargeStats(req, res) {
         try {

@@ -2,6 +2,8 @@
 
 Dự án này là một bài tập lớn môn An toàn và Bảo mật Web, tập trung vào việc mô phỏng, phân tích và khắc phục lỗ hổng Mass Assignment trong ứng dụng NodeJS.
 
+🌐 **Demo Website:** [https://loving-empathy-production.up.railway.app/?typeNews=vip](https://loving-empathy-production.up.railway.app/?typeNews=vip)
+
 ## 👥 Thành viên nhóm & Phân công
 
 | Họ và tên | Mã Sinh viên | Vai trò & Nhiệm vụ |
